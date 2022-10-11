@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        2.1
+// @version        2.2
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
@@ -72,15 +72,25 @@ function download(url, filename) {
             var linkid = document.head.getElementsByTagName('meta')[0].content;
             var titile = document.title.replace(' - ScienceDirect', '');
             GM_setValue(linkid, titile);
-            if (linkid) {
-                var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
-                let Container = document.createElement('div');
-                Container.id = "sp-ac-container";
-                Container.style.position = "fixed";
-                Container.style.left = "250px";
-                Container.style.top = "28px";
-                Container.style['z-index'] = "2";
-                Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
+            var new_url = ""
+            try {
+                new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
+            } catch {
+                var doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
+                var scihub = 'http://sci-hub.ren';
+                new_url = scihub + doi;
+                var ret = prompt('Type scihub address!', scihub);
+                if (ret !== null && ret != '') {
+                    new_url = ret + doi;
+                };
+            };
+            let Container = document.createElement('div');
+            Container.id = "sp-ac-container";
+            Container.style.position = "fixed";
+            Container.style.left = "250px";
+            Container.style.top = "28px";
+            Container.style['z-index'] = "2";
+            Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
                 <style>
                 .button1 {
                 -webkit-transition-duration: 0.4s;
@@ -98,8 +108,7 @@ function download(url, filename) {
                 color: red;
                 }
                 </style>`;
-                document.body.appendChild(Container);
-            };
+            document.body.appendChild(Container);
         };
     };
 })()
