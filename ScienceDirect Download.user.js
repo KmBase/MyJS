@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        2.2
+// @version        2.5
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
@@ -66,49 +66,51 @@ function download(url, filename) {
         };
     };
     if (domain == 'www.sciencedirect.com') {
-        document.addEventListener("DOMContentLoaded", DOM_ContentReady);
-        function DOM_ContentReady() {
-            // creat newlink
+        document.addEventListener('DOMContentLoaded', (event) => {
+            console.log('DOM加载完成.');
             var linkid = document.head.getElementsByTagName('meta')[0].content;
             var titile = document.title.replace(' - ScienceDirect', '');
             GM_setValue(linkid, titile);
-            var new_url = ""
-            try {
-                new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
-            } catch {
-                var doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
+            var access = document.querySelector("#mathjax-container > div.sticky-outer-wrapper > div > div.accessbar > ul > li:nth-child(1) > a").href.split('login')[1];
+            var doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
+            GM_setValue('access', access);
+            if (GM_getValue('access')) {
                 var scihub = 'http://sci-hub.ren';
                 new_url = scihub + doi;
                 var ret = prompt('Type scihub address!', scihub);
                 if (ret !== null && ret != '') {
                     new_url = ret + doi;
-                };
+                    window.location.href = new_url
+                } else { };
+            } else {
+                var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
+                console.log(new_url);
+                let Container = document.createElement('div');
+                Container.id = "sp-ac-container";
+                Container.style.position = "fixed";
+                Container.style.left = "250px";
+                Container.style.top = "28px";
+                Container.style['z-index'] = "2";
+                Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
+                                        <style>
+                                        .button1 {
+                                        -webkit-transition-duration: 0.4s;
+                                        transition-duration: 0.4s;
+                                        padding: 1.5px 6px;
+                                        text-align: center;
+                                        background-color: #f5f5f5;
+                                        color: rgb(243, 109, 33);
+                                        border: 0.5px rgb(134, 218, 209);
+                                        border-radius: 9px;
+                                        font-family: NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif!important;
+                                        }
+                                        .button1:hover {
+                                        background-color: rgb(134, 218, 209);;;
+                                        color: red;
+                                        }
+                                        </style>`;
+                document.body.appendChild(Container);
             };
-            let Container = document.createElement('div');
-            Container.id = "sp-ac-container";
-            Container.style.position = "fixed";
-            Container.style.left = "250px";
-            Container.style.top = "28px";
-            Container.style['z-index'] = "2";
-            Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
-                <style>
-                .button1 {
-                -webkit-transition-duration: 0.4s;
-                transition-duration: 0.4s;
-                padding: 1.5px 6px;
-                text-align: center;
-                background-color: #f5f5f5;
-                color: rgb(243, 109, 33);
-                border: 0.5px rgb(134, 218, 209);
-                border-radius: 9px;
-                font-family: NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif!important;
-                }
-                .button1:hover {
-                background-color: rgb(134, 218, 209);;;
-                color: red;
-                }
-                </style>`;
-            document.body.appendChild(Container);
-        };
+        });
     };
 })()
