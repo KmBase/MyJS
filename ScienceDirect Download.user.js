@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        1.3
+// @version        2.1
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
