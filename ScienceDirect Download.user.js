@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        2.5
+// @version        3.0
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
@@ -37,14 +37,14 @@ function saveAs(blob, filename) {
         link.click();
         body.removeChild(link);
         window.URL.revokeObjectURL(link.href);
-    };
-};
+    }
+}
 
 function download(url, filename) {
     getBlob(url, function (blob) {
         saveAs(blob, filename);
     });
-};
+}
 (function () {
     'use strict';
     var domain = document.domain;
@@ -57,14 +57,14 @@ function download(url, filename) {
             title = GM_getValue(id)
         } catch (err) {
             console.log("err_message" + err.message);
-        };
+        }
         // var html_url = "https://www.sciencedirect.com/science/article/pii/" + document.URL.split("/")[5].split("-")[2]
         var ret = prompt('Type your filename and click confirm to download!', title);
         if (ret !== null && ret != '') {
             var filename = ret + '.pdf';
             download(url, filename);
-        };
-    };
+        }
+    }
     if (domain == 'www.sciencedirect.com') {
         document.addEventListener('DOMContentLoaded', (event) => {
             console.log('DOM加载完成.');
@@ -75,17 +75,18 @@ function download(url, filename) {
             var doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
             GM_setValue('access', access);
             if (GM_getValue('access')) {
-                var scihub = 'http://sci-hub.ren';
+                var scihubs = ['http://sci-hub.ren', 'https://sci-hub.ru/', 'https://sci-hub.se/', 'https://sci-hub.ee/', 'https://sci-hub.shop/', 'https://sci-hub.ren/', 'https://sci-hub.st/'];
+                var scihub = scihubs[Math.floor(Math.random() * scihubs.length)];
                 new_url = scihub + doi;
                 var ret = prompt('Type scihub address!', scihub);
                 if (ret !== null && ret != '') {
                     new_url = ret + doi;
                     window.location.href = new_url
-                } else { };
+                } else { }
             } else {
                 var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
                 console.log(new_url);
-                let Container = document.createElement('div');
+                let Container = document.createElement('div')
                 Container.id = "sp-ac-container";
                 Container.style.position = "fixed";
                 Container.style.left = "250px";
@@ -110,7 +111,7 @@ function download(url, filename) {
                                         }
                                         </style>`;
                 document.body.appendChild(Container);
-            };
+            }
         });
-    };
+    }
 })()
