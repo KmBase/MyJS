@@ -2,29 +2,104 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        2.0
+// @version        1.3
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
-// @match        https://www.sciencedirect.com/*
-// @grant        none
+// @match        *://www.sciencedirect.com/*
+// @match        *://pdf.sciencedirectassets.com/*
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @run-at document-start
 // ==/UserScript==
+function getBlob(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            cb(xhr.response);
+        }
+    };
+    xhr.send();
+};
+function saveAs(blob, filename) {
+    if (window.navigator.msSaveOrOpenBlob) {
+        navigator.msSaveBlob(blob, filename);
+    } else {
+        var link = document.createElement('a');
+        var body = document.querySelector('body');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        // fix Firefox
+        link.style.display = 'none';
+        body.appendChild(link);
+        link.click();
+        body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+    };
+};
+
+function download(url, filename) {
+    getBlob(url, function (blob) {
+        saveAs(blob, filename);
+    });
+};
 (function () {
     'use strict';
-     // get rawlink
-    var head = document.head;
-    // creat newlink
-    var linkid = head.getElementsByTagName('meta')[0].content;
-    if (linkid){
-    var newlink = linkid + '/pdfft?isDTMRedir=true&download=true';
-    let Container = document.createElement('div');
-    Container.id = "sp-ac-container";
-    Container.style.position="fixed"
-    Container.style.left="300px"
-    Container.style.top="28px"
-
-    Container.style['z-index']="999999"
-    Container.innerHTML =`<a href=${newlink}><input type=button value="download" onclick="window.location.href(${newlink})"><style>input{color:#ffffff;background-color:#3366cc;border:none}</style></a>`
-    document.body.appendChild(Container);
-    console.log(newlink)}
- })();
+    var domain = document.domain;
+    if (domain == 'pdf.sciencedirectassets.com') {
+        var url = document.URL + '&download=true';
+        console.log(url);
+        var title = document.URL.split("/")[5].split("-")[2];
+        try {
+            var id = document.URL.split("/")[5].split("-")[2]
+            title = GM_getValue(id)
+        } catch (err) {
+            console.log("err_message" + err.message);
+        };
+        // var html_url = "https://www.sciencedirect.com/science/article/pii/" + document.URL.split("/")[5].split("-")[2]
+        var ret = prompt('Type your filename and click confirm to download!', title);
+        if (ret !== null && ret != '') {
+            var filename = ret + '.pdf';
+            download(url, filename);
+        };
+    };
+    if (domain == 'www.sciencedirect.com') {
+        document.addEventListener("DOMContentLoaded", DOM_ContentReady);
+        function DOM_ContentReady() {
+            // creat newlink
+            var linkid = document.head.getElementsByTagName('meta')[0].content;
+            var titile = document.title.replace(' - ScienceDirect', '');
+            GM_setValue(linkid, titile);
+            if (linkid) {
+                var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
+                let Container = document.createElement('div');
+                Container.id = "sp-ac-container";
+                Container.style.position = "fixed";
+                Container.style.left = "250px";
+                Container.style.top = "28px";
+                Container.style['z-index'] = "2";
+                Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
+                <style>
+                .button1 {
+                -webkit-transition-duration: 0.4s;
+                transition-duration: 0.4s;
+                padding: 1.5px 6px;
+                text-align: center;
+                background-color: #f5f5f5;
+                color: rgb(243, 109, 33);
+                border: 0.5px rgb(134, 218, 209);
+                border-radius: 9px;
+                font-family: NexusSans,Arial,Helvetica,Lucida Sans Unicode,Microsoft Sans Serif,Segoe UI Symbol,STIXGeneral,Cambria Math,Arial Unicode MS,sans-serif!important;
+                }
+                .button1:hover {
+                background-color: rgb(134, 218, 209);;;
+                color: red;
+                }
+                </style>`;
+                document.body.appendChild(Container);
+            };
+        };
+    };
+})()
