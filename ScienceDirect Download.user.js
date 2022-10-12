@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.0.1
+// @version        3.0.3
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
@@ -58,7 +58,10 @@ function download(url, filename) {
 }
 (function () {
     'use strict';
-    var userDefinedBaseURL = defaultBaseURL
+    if (GM_getValue('userDefinedBaseURL') == null) {
+        GM_setValue('userDefinedBaseURL', defaultBaseURL)
+    }
+    var userDefinedBaseURL = ''
     GM_registerMenuCommand(`Customize your scihub address`, () => {
         userDefinedBaseURL = prompt("scihub address", defaultBaseURL);
         if (userDefinedBaseURL) {
