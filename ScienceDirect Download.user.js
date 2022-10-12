@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.0
+// @version        3.0.1
 // @license MIT
 // @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
@@ -10,25 +10,36 @@
 // @match        *://pdf.sciencedirectassets.com/*
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM.xmlHttpRequest
+// @grant        GM_registerMenuCommand
+// @connect      https://pdf.sciencedirectassets.com/*
 // @run-at document-start
 // ==/UserScript==
+
+// global variables
+const defaultBaseURLs = ['http://sci-hub.ren', 'https://sci-hub.se', 'https://sci-hub.ee', 'https://sci-hub.shop', 'https://sci-hub.ren', 'https://sci-hub.st'];
+var defaultBaseURL = defaultBaseURLs[Math.floor(Math.random() * defaultBaseURLs.length)];
+
+// Initialize configuration page
+
 function getBlob(url, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'blob';
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            cb(xhr.response);
+    GM.xmlHttpRequest({
+        method: "GET",
+        url: url,
+        responseType: 'blob',
+        onload: function (response) {
+            cb(response.response);
         }
-    };
-    xhr.send();
-};
+    })
+}
+
 function saveAs(blob, filename) {
     if (window.navigator.msSaveOrOpenBlob) {
         navigator.msSaveBlob(blob, filename);
     } else {
         var link = document.createElement('a');
         var body = document.querySelector('body');
+        console.log(blob)
         link.href = window.URL.createObjectURL(blob);
         link.download = filename;
         // fix Firefox
@@ -47,6 +58,14 @@ function download(url, filename) {
 }
 (function () {
     'use strict';
+    var userDefinedBaseURL = defaultBaseURL
+    GM_registerMenuCommand(`Customize your scihub address`, () => {
+        userDefinedBaseURL = prompt("scihub address", defaultBaseURL);
+        if (userDefinedBaseURL) {
+            GM_setValue('userDefinedBaseURL', userDefinedBaseURL);
+            location.reload();
+        }
+    });
     var domain = document.domain;
     if (domain == 'pdf.sciencedirectassets.com') {
         var url = document.URL + '&download=true';
@@ -74,25 +93,22 @@ function download(url, filename) {
             var access = document.querySelector("#mathjax-container > div.sticky-outer-wrapper > div > div.accessbar > ul > li:nth-child(1) > a").href.split('login')[1];
             var doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
             GM_setValue('access', access);
+            var types = 'download';
             if (GM_getValue('access')) {
-                var scihubs = ['http://sci-hub.ren', 'https://sci-hub.ru/', 'https://sci-hub.se/', 'https://sci-hub.ee/', 'https://sci-hub.shop/', 'https://sci-hub.ren/', 'https://sci-hub.st/'];
-                var scihub = scihubs[Math.floor(Math.random() * scihubs.length)];
-                new_url = scihub + doi;
-                var ret = prompt('Type scihub address!', scihub);
-                if (ret !== null && ret != '') {
-                    new_url = ret + doi;
-                    window.location.href = new_url
-                } else { }
+                userDefinedBaseURL = GM_getValue('userDefinedBaseURL');
+                new_url = userDefinedBaseURL + doi;
+                types = 'scihub';
             } else {
-                var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true";
-                console.log(new_url);
-                let Container = document.createElement('div')
-                Container.id = "sp-ac-container";
-                Container.style.position = "fixed";
-                Container.style.left = "250px";
-                Container.style.top = "28px";
-                Container.style['z-index'] = "2";
-                Container.innerHTML = `<button title="Click to download" class="button1" id="download" onclick="window.location.href='${new_url}'")>download</button>
+                var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true"
+            };
+            console.log(new_url);
+            let Container = document.createElement('div')
+            Container.id = "sp-ac-container";
+            Container.style.position = "fixed";
+            Container.style.left = "250px";
+            Container.style.top = "28px";
+            Container.style['z-index'] = "2";
+            Container.innerHTML = `<button title="Click to download" class="button1" onclick="window.open('${new_url}')">${types}</button>
                                         <style>
                                         .button1 {
                                         -webkit-transition-duration: 0.4s;
@@ -110,8 +126,8 @@ function download(url, filename) {
                                         color: red;
                                         }
                                         </style>`;
-                document.body.appendChild(Container);
-            }
+            document.body.appendChild(Container);
+
         });
     }
-})()
+})();
