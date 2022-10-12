@@ -2,23 +2,27 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.0.3
+// @version        3.1.0
 // @license MIT
-// @description         Avoid jumping to online pdf, and directly download ScienceDirect literature to local
-// @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地
+// @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
+// @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
 // @match        *://www.sciencedirect.com/*
 // @match        *://pdf.sciencedirectassets.com/*
+// @match        *://sci-hub.ee/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM.xmlHttpRequest
 // @grant        GM_registerMenuCommand
-// @connect      https://pdf.sciencedirectassets.com/*
+// @connect      sciencedirectassets.com
+// @connect      sci-hub.ee
+// @connect      bban.top
 // @run-at document-start
 // ==/UserScript==
 
 // global variables
-const defaultBaseURLs = ['http://sci-hub.ren', 'https://sci-hub.se', 'https://sci-hub.ee', 'https://sci-hub.shop', 'https://sci-hub.ren', 'https://sci-hub.st'];
-var defaultBaseURL = defaultBaseURLs[Math.floor(Math.random() * defaultBaseURLs.length)];
+// const defaultBaseURLs = ['http://sci-hub.ren', 'https://sci-hub.se', 'https://sci-hub.ee', 'https://sci-hub.shop', 'https://sci-hub.ren', 'https://sci-hub.st'];
+// var defaultBaseURL = defaultBaseURLs[Math.floor(Math.random() * defaultBaseURLs.length)];
+var defaultBaseURL = 'https://sci-hub.ee';
 
 // Initialize configuration page
 
@@ -85,6 +89,17 @@ function download(url, filename) {
         if (ret !== null && ret != '') {
             var filename = ret + '.pdf';
             download(url, filename);
+        }
+    }
+    if (domain == 'sci-hub.ee') {
+        var doi2 = document.title.split(' | ')[document.title.split(' | ').length - 1]
+        var url2 = "https://sci.bban.top/pdf/" + doi2 + ".pdf?download=true";
+        console.log(url2);
+        var title2 = document.title.split('Sci-Hub | ')[1].replace(' | ', ' _ ');
+        var ret2 = prompt('Type your filename and click confirm to download!', title2);
+        if (ret2 !== null && ret2 != '') {
+            var filename2 = ret2 + '.pdf';
+            download(url2, filename2);
         }
     }
     if (domain == 'www.sciencedirect.com') {
