@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.1.0
+// @version        3.1.1
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -119,12 +119,19 @@ function download(url, filename) {
             } else {
                 var new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true"
             };
-            console.log(new_url);
-            let Container = document.createElement('div')
+            let Container = document.createElement('div');
+            var s = window.screen.width / 1920;
+            var left = "250px";
+            var top = "28px";
+            if (s < 0.5) {
+                left = (100 * s).toString() + "px";
+                top = (18 + 10 / s).toString() + "px";
+            }
+            console.log(left);
             Container.id = "sp-ac-container";
             Container.style.position = "fixed";
-            Container.style.left = "250px";
-            Container.style.top = "28px";
+            Container.style.left = left;
+            Container.style.top = top;
             Container.style['z-index'] = "2";
             Container.innerHTML = `<button title="Click to download" class="button1" onclick="window.open('${new_url}')">${types}</button>
                                         <style>
