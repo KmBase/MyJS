@@ -110,8 +110,8 @@ function pdf_scidirect() {
             let linkid = document.head.getElementsByTagName('meta')[0].content;
             let titile = document.title.replace(' - ScienceDirect', '');
             GM_setValue(linkid, titile);
-            let access = document.querySelector("#mathjax-container > div.sticky-outer-wrapper > div > div.accessbar > ul > li:nth-child(1) > a").href.split('login')[1];
-            let doi = document.getElementsByClassName('doi')[0].href.split('org')[1];
+            let access = document.querySelector("#mathjax-container > div.accessbar-sticky > div:nth-child(2) > div > ul > li.RemoteAccess > a").href.split('login')[1];
+            let doi = document.getElementsByClassName('anchor doi anchor-default')[0].href.split('org')[1];
             GM_setValue('access', access);
             let types = 'download';
             let new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true"
@@ -123,7 +123,7 @@ function pdf_scidirect() {
             let Container = document.createElement('div');
             let s = window.screen.width / 1920;
             let left = "250px";
-            let top = "28px";
+            let top = "20px";
             if (s < 0.5) {
                 left = (100 * s).toString() + "px";
                 top = (18 + 10 / s).toString() + "px";
