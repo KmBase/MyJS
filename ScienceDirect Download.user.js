@@ -2,10 +2,13 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.1.6
+// @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
+// @version        3.2.0
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
+// @homepageURL  https://greasyfork.org/zh-CN/scripts/451690-sciencedirect-download
+// @supportURL  https://greasyfork.org/zh-CN/scripts/451690-sciencedirect-download/feedback
 // @match        *://www.sciencedirect.com/*
 // @match        *://pdf.sciencedirectassets.com/*
 // @match        *://sci-hub.ee/*
