@@ -2,7 +2,7 @@
 // @name                ScienceDirect Download
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
-// @version        3.1.5
+// @version        3.1.6
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -114,14 +114,10 @@ function pdf_scidirect() {
             GM_setValue(linkid, titile);
             try {
                access = document.querySelector("#mathjax-container > div.accessbar-sticky > div:nth-child(2) > div > ul > li.RemoteAccess > a").href.split('login')[1];
+               console.log("Sorry!You haven't the access."); // re-throw the error unchanged
             }
             catch(e){
-                if (e instanceof TypeError) {
-                access = document.querySelector("#mathjax-container > div.accessbar-sticky > div:nth-child(2) > div > ul > li.ViewPDF > a").href;
-                // statements to handle this very common expected error
-                } else {
-                    console.log(e); // re-throw the error unchanged
-                }
+               console.log("Congratruation!You have the access."); // re-throw the error unchanged
             }
             let doi = document.getElementsByClassName('anchor doi anchor-default')[0].href.split('org')[1];
             GM_setValue('access', access);
