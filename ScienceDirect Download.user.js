@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.0
+// @version        3.2.1
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -116,8 +116,7 @@ function pdf_scidirect() {
             let titile = document.title.replace(' - ScienceDirect', '');
             GM_setValue(linkid, titile);
             try {
-               access = document.querySelector("#mathjax-container > div.accessbar-sticky > div:nth-child(2) > div > ul > li.RemoteAccess > a").href.split('login')[1];
-               console.log("Sorry!You haven't the access."); // re-throw the error unchanged
+               access = document.querySelector("#mathjax-container > div.accessbar-sticky > div:nth-child(2) > div > ul > li.RemoteAccess > a").href.split('ogin')[1];
             }
             catch(e){
                console.log("Congratruation!You have the access."); // re-throw the error unchanged
@@ -127,6 +126,7 @@ function pdf_scidirect() {
             let types = 'download';
             let new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true"
             if (GM_getValue('access')) {
+                console.log("Sorry!You haven't the access.")
                 userDefinedBaseURL = GM_getValue('userDefinedBaseURL');
                 new_url = userDefinedBaseURL + doi;
                 types = 'scihub'
