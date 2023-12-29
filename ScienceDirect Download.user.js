@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.2
+// @version        3.2.3
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -45,14 +45,20 @@ function saveAs(blob, filename) {
         let link = document.createElement('a');
         let body = document.querySelector('body');
         console.log(blob)
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
-        // fix Firefox
-        link.style.display = 'none';
-        body.appendChild(link);
-        link.click();
-        body.removeChild(link);
-        window.URL.revokeObjectURL(link.href);
+        let e404 = document.getElementsByClassName("e404");
+        console.log(e404);
+        if (e404.length==0){
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            // fix Firefox
+            link.style.display = 'none';
+            body.appendChild(link);
+            link.click();
+            body.removeChild(link);
+            window.URL.revokeObjectURL(link.href);}
+        else{
+            return 1;
+        }
     }
 }
 
@@ -204,13 +210,7 @@ function pdf_scidirect() {
         }
     }
     if (domain == 'pdf.sciencedirectassets.com') {
-        let e404 = document.getElementsByClassName("e404");
-        if (e404){
-            console.log("Are You A Robot?");
-        }
-        else{
-            pdf_scidirect()
-        }
+        pdf_scidirect()
     }
     if (domain == 'sci-hub.ee') {
         pdf_scihub_ee()
