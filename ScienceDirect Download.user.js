@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.1
+// @version        3.2.2
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -204,7 +204,13 @@ function pdf_scidirect() {
         }
     }
     if (domain == 'pdf.sciencedirectassets.com') {
-        pdf_scidirect()
+        let e404 = document.getElementsByClassName("e404");
+        if (e404){
+            console.log("Are You A Robot?");
+        }
+        else{
+            pdf_scidirect()
+        }
     }
     if (domain == 'sci-hub.ee') {
         pdf_scihub_ee()
