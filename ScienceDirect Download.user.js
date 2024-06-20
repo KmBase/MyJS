@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.3
+// @version        3.2.4
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -20,6 +20,8 @@
 // @connect      sciencedirectassets.com
 // @connect      bban.top
 // @run-at document-start
+// @downloadURL https://update.greasyfork.org/scripts/451690/ScienceDirect%20Download.user.js
+// @updateURL https://update.greasyfork.org/scripts/451690/ScienceDirect%20Download.meta.js
 // ==/UserScript==
 
 // global variables
@@ -44,7 +46,6 @@ function saveAs(blob, filename) {
     } else {
         let link = document.createElement('a');
         let body = document.querySelector('body');
-        console.log(blob)
         let e404 = document.getElementsByClassName("e404");
         console.log(e404);
         if (e404.length==0){
@@ -62,9 +63,18 @@ function saveAs(blob, filename) {
     }
 }
 
+function check_blob(blob) {
+  const type = blob.type.split(';')[0].trim();
+  return type === 'application/pdf';
+}
+
 function download(url, filename) {
     getBlob(url, function (blob) {
-        saveAs(blob, filename);
+        if (check_blob(blob)) {
+            saveAs(blob, filename);
+        } else {
+            return 1;
+        }
     });
 }
 
