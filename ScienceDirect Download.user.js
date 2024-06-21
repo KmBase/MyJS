@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.4
+// @version        3.2.5
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -34,10 +34,21 @@ function getBlob(url, cb) {
         method: "GET",
         url: url,
         responseType: 'blob',
+        headers: {
+            'Content-Type': 'application/pdf',
+            'User-Agent:': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        },
         onload: function (response) {
             cb(response.response);
         }
     })
+}
+
+function extractScriptTags(htmlString) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  const scriptTags = doc.getElementsByTagName('script');
+  return scriptTags[2].outerHTML;
 }
 
 function saveAs(blob, filename) {
@@ -47,8 +58,8 @@ function saveAs(blob, filename) {
         let link = document.createElement('a');
         let body = document.querySelector('body');
         let e404 = document.getElementsByClassName("e404");
-        console.log(e404);
-        if (e404.length==0){
+        if (e404.length==0)
+        {
             link.href = window.URL.createObjectURL(blob);
             link.download = filename;
             // fix Firefox
@@ -56,11 +67,11 @@ function saveAs(blob, filename) {
             body.appendChild(link);
             link.click();
             body.removeChild(link);
-            window.URL.revokeObjectURL(link.href);}
-        else{
-            return 1;
+            window.URL.revokeObjectURL(link.href);
+        }else{
+            return;
         }
-    }
+    };
 }
 
 function check_blob(blob) {
@@ -68,13 +79,19 @@ function check_blob(blob) {
   return type === 'application/pdf';
 }
 
+function check_craft(link) {
+    return link.includes('craft/capi/cfts/')
+}
+
 function download(url, filename) {
     getBlob(url, function (blob) {
-        if (check_blob(blob)) {
-            saveAs(blob, filename);
-        } else {
-            return 1;
-        }
+        if(check_blob(blob)){
+            saveAs(blob,filename)
+        }else{
+        document.open();
+        document.write(blob);
+        document.close();}
+
     });
 }
 
@@ -220,7 +237,13 @@ function pdf_scidirect() {
         }
     }
     if (domain == 'pdf.sciencedirectassets.com') {
+        let link = document.URL;
+        if(check_craft(link))
+        {
+            return;
+        }else{
         pdf_scidirect()
+        };
     }
     if (domain == 'sci-hub.ee') {
         pdf_scihub_ee()
