@@ -43,11 +43,12 @@ function getBlob(url, cb) {
         }
     })
 }
+
 function getHtml(url, cb) {
     GM.xmlHttpRequest({
         method: "GET",
         url: url,
-        responseType: 'blob',
+        responseType: 'text/html',
         headers: {
             'Content-Type': 'text/html',
             'User-Agent:': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
@@ -56,13 +57,6 @@ function getHtml(url, cb) {
             cb(response.response);
         }
     })
-}
-
-function extractScriptTags(htmlString) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlString, 'text/html');
-  const scriptTags = doc.getElementsByTagName('script');
-  return scriptTags[2].outerHTML;
 }
 
 function saveAs(blob, filename) {
@@ -88,18 +82,18 @@ function saveAs(blob, filename) {
     };
 }
 
-function check_blob(blob) {
+function checkBlob(blob) {
   const type = blob.type.split(';')[0].trim();
   return type === 'application/pdf';
 }
 
-function check_craft(link) {
+function checkCraft(link) {
     return link.includes('craft/capi/cfts/')
 }
 
-function download(url, filename) {
+function mainDownload(url, filename) {
     getBlob(url, function (blob) {
-        if (check_blob(blob)) {
+        if (checkBlob(blob)) {
             saveAs(blob, filename);
         } else {
             getHtml(url, function (html) {
@@ -111,7 +105,7 @@ function download(url, filename) {
     });
 }
 
-function pdf_scihub_ee() {
+function downloadScihub() {
     let doi = document.title.split(' | ')[document.title.split(' | ').length - 1]
     try { doi = doi.replace('(', '%2528').replace(')', '%2529') } catch (err) { }
     let title = document.title.split('Sci-Hub | ')[1].replace(' | ', ' _ ');
@@ -119,11 +113,11 @@ function pdf_scihub_ee() {
     let url = "https://sci.bban.top/pdf/" + doi + ".pdf?download=true"
     if (ret !== null && ret != '') {
         let filename = ret + '.pdf';
-        download(url, filename);
+        mainDownload(url, filename);
     }
 }
 
-function pdf_scidirect() {
+function downloadScidirect() {
     let url = document.URL + '&download=true';
     console.log(url);
     let title = document.URL.split("/")[5].split("-")[2];
@@ -137,7 +131,7 @@ function pdf_scidirect() {
     let ret = prompt('Type your filename and click confirm to download!', title);
     if (ret !== null && ret != '') {
         let filename = ret + '.pdf';
-        download(url, filename);
+        mainDownload(url, filename);
     }
 }
 
@@ -254,14 +248,14 @@ function pdf_scidirect() {
     }
     if (domain == 'pdf.sciencedirectassets.com') {
         let link = document.URL;
-        if(check_craft(link))
+        if(checkCraft(link))
         {
             return;
         }else{
-        pdf_scidirect()
+        downloadScidirect()
         };
     }
     if (domain == 'sci-hub.ee') {
-        pdf_scihub_ee()
+        downloadScihub()
     }
 })();
