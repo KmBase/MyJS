@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.5
+// @version        3.2.6
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -36,6 +36,20 @@ function getBlob(url, cb) {
         responseType: 'blob',
         headers: {
             'Content-Type': 'application/pdf',
+            'User-Agent:': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        },
+        onload: function (response) {
+            cb(response.response);
+        }
+    })
+}
+function getHtml(url, cb) {
+    GM.xmlHttpRequest({
+        method: "GET",
+        url: url,
+        responseType: 'blob',
+        headers: {
+            'Content-Type': 'text/html',
             'User-Agent:': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
         },
         onload: function (response) {
@@ -85,13 +99,15 @@ function check_craft(link) {
 
 function download(url, filename) {
     getBlob(url, function (blob) {
-        if(check_blob(blob)){
-            saveAs(blob,filename)
-        }else{
-        document.open();
-        document.write(blob);
-        document.close();}
-
+        if (check_blob(blob)) {
+            saveAs(blob, filename);
+        } else {
+            getHtml(url, function (html) {
+                document.open();
+                document.write(html);
+                document.close();
+            });
+        }
     });
 }
 
