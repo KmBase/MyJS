@@ -3,7 +3,7 @@
 // @name:zh-CN          ScienceDirect下载
 // @namespace      tampermonkey.com
 // @icon https://greasyfork.org/vite/assets/blacklogo96-e0c2c761.png
-// @version        3.2.6
+// @version        3.2.7
 // @license MIT
 // @description         Avoid jumping to online pdf,and directly download ScienceDirect literature to local,Support custom file names.
 // @description:zh-CN   避免跳转在线pdf，可直接下载ScienceDirect文献到本地,支持自定义文件名
@@ -164,7 +164,7 @@ function downloadScidirect() {
             catch(e){
                console.log("Congratruation!You have the access."); // re-throw the error unchanged
             }
-            let doi = document.getElementsByClassName('anchor doi anchor-default')[0].href.split('org')[1];
+            let doi = document.getElementsByClassName('anchor doi anchor-primary')[0].href.split('org')[1];
             GM_setValue('access', access);
             let types = 'download';
             let new_url = "https://www.sciencedirect.com/science/article/pii/" + linkid + "/pdfft?isDTMRedir=true"
